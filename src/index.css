@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-peach-50: #FFF5F0;
+  --color-peach-100: #FFE8D6;
+  --color-peach-200: #FFD5BA;
+  --color-peach-300: #FFC09E;
+  --color-peach-400: #FFAA82;
+  --color-peach-500: #FF9466;
+
+  --color-rose-50: #FFF1F2;
+  --color-rose-100: #FFE4E6;
+  --color-rose-200: #FECDD3;
+  --color-rose-300: #FDA4AF;
+  --color-rose-400: #F9A8D4;
+  --color-rose-500: #F472B6;
+  --color-rose-600: #EC4899;
+
+  --color-flower: #F472B6;
+  --color-flower-light: #FBCFE8;
+  --color-flower-bg: #FDF2F8;
+
+  --color-veggie: #34D399;
+  --color-veggie-light: #D1FAE5;
+  --color-veggie-bg: #ECFDF5;
+
+  --color-earth: #78350F;
+  --color-earth-light: #92400E;
+  --color-earth-muted: #A8856A;
+
+  --color-seed: #F59E0B;
+  --color-sprout: #10B981;
+  --color-bloom: #EC4899;
+  --color-harvest: #F97316;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FFF5F0 0%, #FFE4D6 50%, #FBCFE8 100%);
+  background-attachment: fixed;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #78350F;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FFE8D6;
+}
+::-webkit-scrollbar-thumb {
+  background: #F9A8D4;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F472B6;
+}
