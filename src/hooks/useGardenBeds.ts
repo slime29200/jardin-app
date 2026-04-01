@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
-import type { GardenBed, BedPlacement } from '../types';
+import type { GardenBed } from '../types';
 
 export function useGardenBeds() {
   const beds = useLiveQuery(() => db.gardenBeds.toArray()) || [];

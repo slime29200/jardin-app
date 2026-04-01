@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Filter, Eye, EyeOff } from 'lucide-react';
 import { usePlants } from '../hooks/usePlants';
-import type { Plant, PlantType } from '../types';
+import type { Plant } from '../types';
 import { MONTHS, EVENT_TYPE_ICONS, EVENT_TYPE_LABELS } from '../types';
 
 interface CalEvent {

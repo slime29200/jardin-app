@@ -119,7 +119,6 @@ function BedGrid({ bed, onSelectCell }: { bed: GardenBed; onSelectCell: (row: nu
         const col = idx % bed.cols;
         const data = getPlantAt(row, col);
         const plant = data?.plant;
-        const isFlower = plant && (plant.type === 'flower' || plant.type === 'fruit');
 
         return (
           <BedCell
