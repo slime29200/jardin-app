@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
-import { Plus, Trash2, X, Camera, Check, Hash, Search } from 'lucide-react';
+import { Plus, Trash2, X, Camera, Check, Hash, Search, Download, Upload } from 'lucide-react';
 import PlantCard from '../components/PlantBank/PlantCard';
 import PlantDetail from '../components/PlantBank/PlantDetail';
 import { usePlants } from '../hooks/usePlants';
+import { useGardenBeds } from '../hooks/useGardenBeds';
+import { db } from '../db/database';
 import type { Plant, PlantType } from '../types';
 import { PLANT_TYPE_LABELS, MONTHS } from '../types';
 
@@ -171,11 +173,53 @@ function NumberModal({ plant, onClose, onSave }: { plant: Plant; onClose: () => 
 
 export default function MyGardenPage() {
   const { allPlants, addPlant, deletePlant, toggleSelected, updatePlant } = usePlants();
+  const { beds, placements } = useGardenBeds();
   const [showAdd, setShowAdd] = useState(false);
   const [selectedPlant, setSelectedPlant] = useState<Plant | null>(null);
   const [numberingPlant, setNumberingPlant] = useState<Plant | null>(null);
   const [filter, setFilter] = useState<'all' | 'selected' | 'custom'>('all');
   const [search, setSearch] = useState('');
+  const [importMsg, setImportMsg] = useState('');
+  const importRef = useRef<HTMLInputElement>(null);
+
+  async function handleExport() {
+    const data = { plants: allPlants, beds, placements, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mon-jardin-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!data.plants) throw new Error('Fichier invalide');
+      // Importer les plantes
+      await db.plants.clear();
+      await db.plants.bulkAdd(data.plants.map((p: Plant) => ({ ...p, id: undefined, createdAt: new Date(p.createdAt) })));
+      // Importer les bacs et placements si présents
+      if (data.beds) {
+        await db.gardenBeds.clear();
+        await db.gardenBeds.bulkAdd(data.beds.map((b: { id?: number; createdAt: string }) => ({ ...b, id: undefined, createdAt: new Date(b.createdAt) })));
+      }
+      if (data.placements) {
+        await db.bedPlacements.clear();
+        await db.bedPlacements.bulkAdd(data.placements.map((p: { id?: number; plantedAt: string }) => ({ ...p, id: undefined, plantedAt: new Date(p.plantedAt) })));
+      }
+      setImportMsg(`✓ ${data.plants.length} plantes importées`);
+      setTimeout(() => setImportMsg(''), 3000);
+    } catch {
+      setImportMsg('✗ Fichier invalide');
+      setTimeout(() => setImportMsg(''), 3000);
+    }
+    e.target.value = '';
+  }
 
   const filtered = allPlants.filter(p => {
     if (filter === 'selected') { if (!p.isSelected) return false; }
@@ -195,14 +239,26 @@ export default function MyGardenPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 pb-24 md:pb-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 relative">
         <div>
           <h1 className="text-2xl font-bold text-earth">Mon Jardin</h1>
           <p className="text-sm text-earth-muted">{allPlants.length} plante{allPlants.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-peach-400 text-white rounded-full text-sm font-medium hover:shadow-md active:scale-95 transition-all">
-          <Plus size={18} /> Ajouter
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleExport} title="Sauvegarder mes données" className="flex items-center gap-1.5 px-3 py-2 bg-white/70 border border-rose-100 text-earth rounded-full text-sm hover:bg-rose-50 active:scale-95 transition-all">
+            <Download size={15} /> Sauvegarder
+          </button>
+          <button onClick={() => importRef.current?.click()} title="Restaurer une sauvegarde" className="flex items-center gap-1.5 px-3 py-2 bg-white/70 border border-rose-100 text-earth rounded-full text-sm hover:bg-rose-50 active:scale-95 transition-all">
+            <Upload size={15} /> Restaurer
+          </button>
+          <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+          <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-peach-400 text-white rounded-full text-sm font-medium hover:shadow-md active:scale-95 transition-all">
+            <Plus size={18} /> Ajouter
+          </button>
+        </div>
+        {importMsg && (
+          <div className="absolute top-16 right-4 bg-white border border-rose-100 shadow-lg rounded-xl px-4 py-2 text-sm text-earth z-50">{importMsg}</div>
+        )}
       </div>
 
       {/* Barre de recherche */}
