@@ -2,8 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig({
-  base: '/jardin-app/', // nom exact de votre repo GitHub
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/jardin-app/' : '/',
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
@@ -19,4 +19,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))
